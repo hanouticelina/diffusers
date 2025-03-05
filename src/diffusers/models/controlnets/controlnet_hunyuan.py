@@ -25,16 +25,8 @@ from ..embeddings import (
     PatchEmbed,
     PixArtAlphaTextProjection,
 )
-
-
-
 from ..modeling_utils import ModelMixin
 from ..transformers.hunyuan_transformer_2d import HunyuanDiTBlock
-
-
-
-
-
 from .controlnet import Tuple, zero_module
 
 
@@ -65,11 +57,7 @@ class HunyuanDiT2DControlNetModel(ModelMixin, ConfigMixin):
         pooled_projection_dim: int = 1024,
         text_len: int = 77,
         text_len_t5: int = 256,
-        
-        
-        
-        
-        use_style_cond_and_image_meta_size: bool = True
+        use_style_cond_and_image_meta_size: bool = True,
     ):
         super().__init__()
         self.num_heads = num_attention_heads

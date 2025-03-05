@@ -68,6 +68,12 @@ jobs:
             core.setOutput("prNumber", prNumber);
             core.setOutput("headRef", pr.head.ref);
             core.setOutput("headRepoFullName", pr.head.repo.full_name);
+            core.setOutput("baseRef", pr.base.ref);
+            // Log the values to help with debugging
+            console.log("PR Number:", prNumber);
+            console.log("Head Ref:", pr.head.ref);
+            console.log("Head Repo Full Name:", pr.head.repo.full_name);
+            console.log("Base Ref:", pr.base.ref);
 
       - name: Check out PR branch
         uses: actions/checkout@v3
@@ -87,19 +93,24 @@ jobs:
           HEADREPOFULLNAME: ${{ steps.pr_info.outputs.headRepoFullName }}
           HEADREF: ${{ steps.pr_info.outputs.headRef }}
           PRNUMBER: ${{ steps.pr_info.outputs.prNumber }}
+          BASEREF: ${{ steps.pr_info.outputs.baseRef }}
         run: |
           echo "PR number: $PRNUMBER"
           echo "Head Ref: $HEADREF"
           echo "Head Repo Full Name: $HEADREPOFULLNAME"
-    
+          echo "Base Ref: $BASEREF"
       - name: Verify critical files haven't been modified
+        env: 
+          HEADREPOFULLNAME: ${{ steps.pr_info.outputs.headRepoFullName }}
+          HEADREF: ${{ steps.pr_info.outputs.headRef }}
+          PRNUMBER: ${{ steps.pr_info.outputs.prNumber }}
+          BASE_BRANCH: ${{ steps.pr_info.outputs.baseRef }}
         run: |
           # List of protected files
           PROTECTED_FILES="setup.py Makefile"
           echo "Protected files: $PROTECTED_FILES"
           
           # Get the base branch name from the previous step
-          BASE_BRANCH="${{ steps.pr_info.outputs.baseRef }}"
           echo "Base branch: $BASE_BRANCH"
           
           # Get list of modified files in this PR

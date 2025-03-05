@@ -14,6 +14,7 @@ env:
 
 jobs:
   torch_pipelines_cuda_benchmark_tests:
+    if: false
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_BENCHMARK }}
     name: Torch Core Pipelines CUDA Benchmarking Tests

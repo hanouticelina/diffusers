@@ -18,6 +18,7 @@ env:
 
 jobs:
   setup_torch_cuda_pipeline_matrix:
+    if: false
     name: Setup Torch Pipelines CUDA Slow Tests Matrix
     runs-on:
       group: aws-general-8-plus

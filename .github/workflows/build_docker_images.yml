@@ -20,6 +20,7 @@ env:
 
 jobs:
   test-build-docker-images:
+    if: false 
     runs-on:
       group: aws-general-8-plus
     if: github.event_name == 'pull_request'

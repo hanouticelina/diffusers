@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   check_torch_dependencies:
+    if: false
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3

@@ -22,6 +22,7 @@ on:
 
 jobs:
   mirror_community_pipeline:
+    if: false  # Disable this workflow
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_COMMUNITY_MIRROR }}
 

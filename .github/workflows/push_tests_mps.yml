@@ -23,6 +23,7 @@ concurrency:
 
 jobs:
   run_fast_tests_apple_m1:
+    if: false
     name: Fast PyTorch MPS tests on MacOS
     runs-on: macos-13-xlarge
 

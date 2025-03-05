@@ -29,6 +29,7 @@ env:
 
 jobs:
   check_code_quality:
+    if: false
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3

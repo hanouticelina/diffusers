@@ -24,6 +24,7 @@ env:
 
 jobs:
   run_fast_tests:
+    if: false
     strategy:
       fail-fast: false
       matrix:

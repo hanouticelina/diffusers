@@ -9,6 +9,7 @@ on:
 
 jobs:
   update_metadata:
+    if: false
     runs-on: ubuntu-22.04
     defaults:
       run:

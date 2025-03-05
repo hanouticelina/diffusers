@@ -1,0 +1,196 @@
+name: Style Bot Action
+
+on:
+    workflow_call:
+      inputs:
+        style_type:
+          required: false
+          type: string
+          description: "Type of style check to run (options: 'default', 'quality_only', 'style_only')"
+          default: "default"
+        python_quality_dependencies:
+          required: true
+          type: string
+          description: "Python package extras to install for quality checks (e.g. '[quality]')"
+        python_version:
+          required: false
+          type: string
+          description: "Python version to run code formatter"
+          default: "3.10"
+      secrets:
+        bot_token:
+          required: true
+          description: "GitHub token with permissions to comment and push to PR"
+  
+jobs:
+  check-permissions:
+    if: >
+      contains(github.event.comment.body, '@bot /style') &&
+      github.event.issue.pull_request != null
+    runs-on: ubuntu-latest
+    outputs:
+      is_authorized: ${{ steps.check_user_permission.outputs.has_permission }}
+    steps:
+      - name: Check user permission
+        id: check_user_permission
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const comment_user = context.payload.comment.user.login;
+            const { data: permission } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: comment_user
+            });
+            const authorized = permission.permission === 'admin';
+            console.log(`User ${comment_user} has permission level: ${permission.permission}, authorized: ${authorized} (only admins allowed)`);
+            core.setOutput('has_permission', authorized);
+
+  run-style-bot:
+    needs: check-permissions
+    if: needs.check-permissions.outputs.is_authorized == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract PR details
+        id: pr_info
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prNumber = context.payload.issue.number;
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+            
+            // We capture both the branch ref and the "full_name" of the head repo
+            // so that we can check out the correct repository & branch (including forks).
+            core.setOutput("prNumber", prNumber);
+            core.setOutput("headRef", pr.head.ref);
+            core.setOutput("headRepoFullName", pr.head.repo.full_name);
+
+      - name: Check out PR branch
+        uses: actions/checkout@v3
+        env: 
+          HEADREPOFULLNAME: ${{ steps.pr_info.outputs.headRepoFullName }}
+          HEADREF: ${{ steps.pr_info.outputs.headRef }}
+        with:
+          # Instead of checking out the base repo, use the contributor's repo name
+          repository: ${{ env.HEADREPOFULLNAME }}
+          ref: ${{ env.HEADREF }}
+          # You may need fetch-depth: 0 for being able to push
+          fetch-depth: 0
+          token: ${{ secrets.bot_token }}
+
+      - name: Debug
+        env: 
+          HEADREPOFULLNAME: ${{ steps.pr_info.outputs.headRepoFullName }}
+          HEADREF: ${{ steps.pr_info.outputs.headRef }}
+          PRNUMBER: ${{ steps.pr_info.outputs.prNumber }}
+        run: |
+          echo "PR number: $PRNUMBER"
+          echo "Head Ref: $HEADREF"
+          echo "Head Repo Full Name: $HEADREPOFULLNAME"
+    
+      - name: Verify critical files haven't been modified
+        run: |
+          # List of protected files
+          PROTECTED_FILES="setup.py Makefile"
+          
+          # Get list of modified files in this PR
+          MODIFIED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }})
+          
+          # Check for any protected files in the modified files
+          for file in $PROTECTED_FILES; do
+            if echo "$MODIFIED_FILES" | grep -q "^$file$"; then
+              # Check if the file exists in the base branch
+              if git ls-tree -r origin/${{ github.event.pull_request.base.ref }} --name-only | grep -q "^$file$"; then
+                echo "❌ Error: Protected file '$file' has been modified in this PR. This is not allowed for security reasons."
+              else
+                echo "❌ Error: Protected file '$file' has been added in this PR. This is not allowed for security reasons."
+              fi
+              exit 1
+            fi
+          done
+          
+          echo "✅ All protected files check passed!"
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.python_version }}
+
+      - name: Install dependencies
+        env:
+          python_quality_dependencies: ${{ inputs.python_quality_dependencies }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install .$python_quality_dependencies
+
+      - name: Run style command
+        id: run_style
+        run: |
+          case "${{ inputs.style_type }}" in
+            "default")
+              echo "Running default style and quality checks"
+              make style && make quality
+              ;;
+            "quality_only")
+              echo "Running quality checks only"
+              make quality
+              ;;
+            "style_only")
+              echo "Running style checks only"
+              make style
+              ;;
+            *)
+              echo "Invalid style_type: ${{ inputs.style_type }}"
+              echo "Valid options are: 'default', 'quality_only', 'style_only'"
+              exit 1
+              ;;
+          esac
+
+      - name: Commit and push changes
+        id: commit_and_push
+        env: 
+          HEADREPOFULLNAME: ${{ steps.pr_info.outputs.headRepoFullName }}
+          HEADREF: ${{ steps.pr_info.outputs.headRef }}
+          PRNUMBER: ${{ steps.pr_info.outputs.prNumber }}
+          GITHUB_TOKEN: ${{ secrets.bot_token }}
+        run: |
+          echo "HEADREPOFULLNAME: $HEADREPOFULLNAME, HEADREF: $HEADREF"
+          # Configure git with the Actions bot user
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Make sure your 'origin' remote is set to the contributor's fork
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/$HEADREPOFULLNAME.git"
+
+          # If there are changes after running style/quality, commit them
+          if [ -n "$(git status --porcelain)" ]; then
+            git add .
+            git commit -m "Apply style fixes"
+            # Push to the original contributor's forked branch
+            git push origin HEAD:$HEADREF
+            echo "changes_pushed=true" >> $GITHUB_OUTPUT
+          else
+            echo "No changes to commit."
+            echo "changes_pushed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment on PR with workflow run link
+        if: steps.commit_and_push.outputs.changes_pushed == 'true'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prNumber = parseInt(process.env.prNumber, 10);
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `Style fixes have been applied. [View the workflow run here](${runUrl}).`
+            });
+        env:
+          prNumber: ${{ steps.pr_info.outputs.prNumber }}

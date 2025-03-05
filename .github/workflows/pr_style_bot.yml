@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   style:
-    uses: .github/workflows/bot-action.yml
+    uses: huggingface/huggingface_hub/.github/workflows/style-bot-action.yml@main
     with:
       python_quality_dependencies: "[quality]"
       pre_commit_script_name: "Download and Compare files from the main branch"

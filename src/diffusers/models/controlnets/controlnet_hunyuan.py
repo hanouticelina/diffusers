@@ -17,9 +17,12 @@ from typing import Dict, Optional, Union
 import torch
 from torch import nn
 
-from ...configuration_utils import ConfigMixin, register_to_config
-from ...utils import BaseOutput, logging
+
 from ..attention_processor import AttentionProcessor
+
+
+
+
 from ..embeddings import (
     HunyuanCombinedTimestepTextSizeStyleEmbedding,
     PatchEmbed,
@@ -28,7 +31,8 @@ from ..embeddings import (
 from ..modeling_utils import ModelMixin
 from ..transformers.hunyuan_transformer_2d import HunyuanDiTBlock
 from .controlnet import Tuple, zero_module
-
+from ...configuration_utils import ConfigMixin, register_to_config
+from ...utils import BaseOutput, logging
 
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
 
@@ -36,6 +40,11 @@ logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
 @dataclass
 class HunyuanControlNetOutput(BaseOutput):
     controlnet_block_samples: Tuple[torch.Tensor]
+
+
+
+
+
 
 
 class HunyuanDiT2DControlNetModel(ModelMixin, ConfigMixin):

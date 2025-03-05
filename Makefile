@@ -94,6 +94,3 @@ post-release:
 
 post-patch:
 	python utils/release.py --post_release --patch
-
-
-

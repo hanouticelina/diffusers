@@ -97,12 +97,15 @@ jobs:
           # List of protected files
           PROTECTED_FILES="setup.py Makefile"
           echo "Protected files: $PROTECTED_FILES"
-          # Get the base branch name
-          BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+          
+          # Get the base branch name from the previous step
+          BASE_BRANCH="${{ steps.pr_info.outputs.baseRef }}"
           echo "Base branch: $BASE_BRANCH"
+          
           # Get list of modified files in this PR
           MODIFIED_FILES=$(git diff --name-only origin/$BASE_BRANCH)
           echo "Modified files: $MODIFIED_FILES"
+          
           # Check for any protected files in the modified files
           for file in $PROTECTED_FILES; do
             if echo "$MODIFIED_FILES" | grep -q "^$file$"; then

@@ -100,32 +100,30 @@ jobs:
           echo "Head Repo Full Name: $HEADREPOFULLNAME"
           echo "Base Ref: $BASEREF"
       - name: Verify critical files haven't been modified
-        env: 
-          HEADREPOFULLNAME: ${{ steps.pr_info.outputs.headRepoFullName }}
-          HEADREF: ${{ steps.pr_info.outputs.headRef }}
-          PRNUMBER: ${{ steps.pr_info.outputs.prNumber }}
-          BASE_BRANCH: ${{ steps.pr_info.outputs.baseRef }}
-        run: |
-          # List of protected files
-          PROTECTED_FILES="setup.py Makefile"
-          echo "Protected files: $PROTECTED_FILES"
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prNumber = context.payload.issue.number;
+            const { data: pr } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
             
-          # First fetch the base branch
-          git fetch origin $BASE_BRANCH
+            const modifiedFiles = pr.map(file => file.filename);
+            console.log("Modified files:", modifiedFiles);
             
-          # Get list of modified files between base branch and current PR branch
-          MODIFIED_FILES=$(git diff --name-only HEAD origin/$BASE_BRANCH)
-          echo "Modified files: $MODIFIED_FILES"
+            const protectedFiles = ["setup.py", "Makefile"];
+            console.log("Protected files:", protectedFiles);
             
-          # Check for any protected files in the modified files
-          for file in $PROTECTED_FILES; do
-            if echo "$MODIFIED_FILES" | grep -q "^$file$"; then
-              echo "❌ Error: Protected file '$file' has been modified in this PR. This is not allowed for security reasons."
-              exit 1
-            fi
-          done
+            for (const file of protectedFiles) {
+              if (modifiedFiles.includes(file)) {
+                core.setFailed(`❌ Error: Protected file '${file}' has been modified in this PR. This is not allowed for security reasons.`);
+                return;
+              }
+            }
             
-          echo "✅ All protected files check passed!"
+            console.log("✅ All protected files check passed!");
       - name: Set up Python
         uses: actions/setup-python@v4
         with:

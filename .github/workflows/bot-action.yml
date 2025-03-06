@@ -113,19 +113,19 @@ jobs:
           # First fetch the base branch
           git fetch origin $BASE_BRANCH
             
-           # Get list of modified files between base branch and PR
-           MODIFIED_FILES=$(git diff --name-only origin/$BASE_BRANCH)
-           echo "Modified files: $MODIFIED_FILES"
+          # Get list of modified files between base branch and current PR branch
+          MODIFIED_FILES=$(git diff --name-only HEAD origin/$BASE_BRANCH)
+          echo "Modified files: $MODIFIED_FILES"
             
-           # Check for any protected files in the modified files
-           for file in $PROTECTED_FILES; do
-              if echo "$MODIFIED_FILES" | grep -q "^$file$"; then
-                echo "❌ Error: Protected file '$file' has been modified in this PR. This is not allowed for security reasons."
-                exit 1
-              fi
-            done
+          # Check for any protected files in the modified files
+          for file in $PROTECTED_FILES; do
+            if echo "$MODIFIED_FILES" | grep -q "^$file$"; then
+              echo "❌ Error: Protected file '$file' has been modified in this PR. This is not allowed for security reasons."
+              exit 1
+            fi
+          done
             
-            echo "✅ All protected files check passed!"
+          echo "✅ All protected files check passed!"
       - name: Set up Python
         uses: actions/setup-python@v4
         with:

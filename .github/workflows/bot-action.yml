@@ -110,28 +110,19 @@ jobs:
           PROTECTED_FILES="setup.py Makefile"
           echo "Protected files: $PROTECTED_FILES"
           
-          # Get the base branch name from the previous step
-          echo "Base branch: $HEADREF"
-          
-          # Get list of modified files in this PR
-          MODIFIED_FILES=$(git diff --name-only origin/$HEADREF)
+          # Get list of modified files between base branch and PR
+          MODIFIED_FILES=$(git diff --name-only origin/$BASEREF...HEAD)
           echo "Modified files: $MODIFIED_FILES"
           
           # Check for any protected files in the modified files
           for file in $PROTECTED_FILES; do
             if echo "$MODIFIED_FILES" | grep -q "^$file$"; then
-              # Check if the file exists in the base branch
-              if git ls-tree -r origin/$HEADREF --name-only | grep -q "^$file$"; then
-                echo "❌ Error: Protected file '$file' has been modified in this PR. This is not allowed for security reasons."
-              else
-                echo "❌ Error: Protected file '$file' has been added in this PR. This is not allowed for security reasons."
-              fi
+              echo "❌ Error: Protected file '$file' has been modified in this PR. This is not allowed for security reasons."
               exit 1
             fi
           done
           
           echo "✅ All protected files check passed!"
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:

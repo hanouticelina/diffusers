@@ -61,9 +61,7 @@ jobs:
 
   run-style-bot:
     needs: check-permissions
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      needs.check-permissions.outputs.is_authorized == 'true'
+    if: needs.check-permissions.outputs.is_authorized == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Extract PR details
@@ -72,7 +70,7 @@ jobs:
         with:
           script: |
             const prNumber = context.eventName === 'workflow_dispatch' 
-              ? inputs.pr_number 
+              ? context.payload.inputs.pr_number 
               : context.payload.issue.number;
             
             // Get PR details
@@ -124,7 +122,7 @@ jobs:
         with:
           script: |
             const prNumber = context.eventName === 'workflow_dispatch' 
-              ? inputs.pr_number 
+              ? context.payload.inputs.pr_number 
               : context.payload.issue.number;
             const { data: pr } = await github.rest.pulls.listFiles({
               owner: context.repo.owner,

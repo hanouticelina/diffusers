@@ -3,11 +3,15 @@ name: Style Bot Action
 on:
     workflow_call:
       inputs:
-        style_type:
+        style_command_type:
           required: false
           type: string
-          description: "Type of style check to run (options: 'default', 'quality_only', 'style_only')"
+          description: "Which style command to run (options: 'default', 'quality_only', 'style_only')"
           default: "default"
+        pr_number:
+          required: false
+          type: number
+          description: "Pull Request number to process (only used when running manually)"
         python_quality_dependencies:
           required: true
           type: string
@@ -17,15 +21,11 @@ on:
           type: string
           description: "Python version to run code formatter"
           default: "3.10"
-        pr_number:
-          required: false
-          type: number
-          description: "Pull Request number to process"
       secrets:
         bot_token:
           required: true
           description: "GitHub token with permissions to comment and push to PR"
-          
+  
 jobs:
   check-permissions:
     if: >
@@ -111,12 +111,11 @@ jobs:
           HEADREPOFULLNAME: ${{ steps.pr_info.outputs.headRepoFullName }}
           HEADREF: ${{ steps.pr_info.outputs.headRef }}
           PRNUMBER: ${{ steps.pr_info.outputs.prNumber }}
-          BASEREF: ${{ steps.pr_info.outputs.baseRef }}
         run: |
           echo "PR number: $PRNUMBER"
           echo "Head Ref: $HEADREF"
           echo "Head Repo Full Name: $HEADREPOFULLNAME"
-          echo "Base Ref: $BASEREF"
+
       - name: Verify critical files haven't been modified
         uses: actions/github-script@v6
         with:
@@ -159,7 +158,7 @@ jobs:
       - name: Run style command
         id: run_style
         run: |
-          case "${{ inputs.style_type }}" in
+          case "${{ inputs.style_command_type }}" in
             "default")
               echo "Running default style and quality checks"
               make style && make quality
@@ -173,7 +172,7 @@ jobs:
               make style
               ;;
             *)
-              echo "Invalid style_type: ${{ inputs.style_type }}"
+              echo "Invalid style_command_type: ${{ inputs.style_command_type }}"
               echo "Valid options are: 'default', 'quality_only', 'style_only'"
               exit 1
               ;;

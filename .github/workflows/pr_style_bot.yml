@@ -19,7 +19,7 @@ jobs:
     uses: ./.github/workflows/bot-action.yml
     with:
       python_quality_dependencies: "[quality]"
-      style_type: "default"
+      style_command_type: "default"
       pr_number: ${{ fromJSON(inputs.pr_number) }}
     secrets:
       bot_token: ${{ secrets.GITHUB_TOKEN }}

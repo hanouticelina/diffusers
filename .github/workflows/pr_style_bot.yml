@@ -4,7 +4,12 @@ on:
   issue_comment:
     types: [created]
   workflow_dispatch:
-    
+    inputs:
+      pr_number:
+        description: 'Pull Request number to run style checks on'
+        required: true
+        type: number
+
 permissions:
   contents: write
   pull-requests: write
@@ -15,5 +20,6 @@ jobs:
     with:
       python_quality_dependencies: "[quality]"
       style_type: "default"
+      pr_number: ${{ github.event.inputs.pr_number }}
     secrets:
       bot_token: ${{ secrets.GITHUB_TOKEN }}

@@ -75,13 +75,13 @@ fix-copies:
 test:
 	python -m pytest -n auto --dist=loadfile -s -v ./tests/
 
-# Run tests for examples
+# Run tests for examples test
 
 test-examples:
 	python -m pytest -n auto --dist=loadfile -s -v ./examples/
 
 
-# Release stuff
+# Release stuff test
 
 pre-release:
 	python utils/release.py

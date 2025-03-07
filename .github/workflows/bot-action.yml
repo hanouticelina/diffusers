@@ -61,7 +61,9 @@ jobs:
 
   run-style-bot:
     needs: check-permissions
-    if: needs.check-permissions.outputs.is_authorized == 'true'
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      needs.check-permissions.outputs.is_authorized == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Extract PR details

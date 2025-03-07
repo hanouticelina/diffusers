@@ -25,8 +25,10 @@ on:
 jobs:
   check-permissions:
     if: >
-      contains(github.event.comment.body, '@bot /style') &&
-      github.event.issue.pull_request != null
+      (github.event_name == 'issue_comment' && 
+       contains(github.event.comment.body, '@bot /style') &&
+       github.event.issue.pull_request != null) ||
+      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     outputs:
       is_authorized: ${{ steps.check_user_permission.outputs.has_permission }}
@@ -36,7 +38,14 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const comment_user = context.payload.comment.user.login;
+            let comment_user;
+            if (context.eventName === 'workflow_dispatch') {
+              comment_user = context.actor;
+              console.log('Workflow triggered manually by:', comment_user);
+            } else {
+              comment_user = context.payload.comment.user.login;
+              console.log('Workflow triggered by comment from:', comment_user);
+            }
             const { data: permission } = await github.rest.repos.getCollaboratorPermissionLevel({
               owner: context.repo.owner,
               repo: context.repo.repo,

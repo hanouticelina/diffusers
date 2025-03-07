@@ -3,13 +3,39 @@ name: PR Style Bot
 on:
   issue_comment:
     types: [created]
-    
+  workflow_dispatch:
+    inputs:
+      test_user:
+        description: 'Test user login'
+        required: false
+        default: 'test-user'  
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
+  debug_context:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug context
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const triggerEvent = context.eventName;
+            console.log('Trigger event:', triggerEvent);
+            
+            let userLogin;
+            if (triggerEvent === 'issue_comment') {
+              userLogin = context.payload.comment.user.login;
+            } else if (triggerEvent === 'workflow_dispatch') {
+              userLogin = context.actor;
+            }
+            
+            console.log('User login:', userLogin);
+            console.log('Full context:', JSON.stringify(context, null, 2));
+
   style:
+    needs: debug_context
     uses: ./.github/workflows/bot-action.yml
     with:
       python_quality_dependencies: "[quality]"

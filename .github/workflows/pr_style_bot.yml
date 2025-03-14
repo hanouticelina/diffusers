@@ -1,4 +1,4 @@
-name: PR Style Bot
+name: Style Bot
 
 on:
   issue_comment:
@@ -7,7 +7,7 @@ on:
     inputs:
       pr_number:
         description: 'Pull Request number to run style checks on'
-        required: true
+        required: false
         type: number
 
 permissions:
@@ -15,20 +15,11 @@ permissions:
   pull-requests: write
 
 jobs:
-  debug-inputs:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Debug event context
-          run: |
-            echo "Event name: ${{ github.event_name }}"
-            echo "PR number from event inputs: ${{ github.event.inputs.pr_number }}"
-            echo "Raw event: ${{ toJSON(github.event) }}"
-            echo "Calculated PR number: ${{ fromJSON(github.event_name == 'workflow_dispatch' && github.event.inputs.pr_number || github.event.issue.number) }}"
   style:
-    uses: ./.github/workflows/bot-action.yml
+    uses: ./.github/workflows/style-bot-action.yml
     with:
       python_quality_dependencies: "[quality]"
-      style_command_type: "default" 
+      style_command_type: "style_only"
       pr_number: ${{ fromJSON(github.event_name == 'workflow_dispatch' && github.event.inputs.pr_number || github.event.issue.number) }}
     secrets:
       bot_token: ${{ secrets.GITHUB_TOKEN }}

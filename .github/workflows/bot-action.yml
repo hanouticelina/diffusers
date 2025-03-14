@@ -61,10 +61,12 @@ jobs:
         with:
           script: |
             const prNumber = core.getInput('pr_number');
-
+            console.log(`Fetching PR details for PR #${prNumber}`);
+            
             const { data: pr } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
+              pull_number: prNumber
             });
             
             // We capture both the branch ref and the "full_name" of the head repo

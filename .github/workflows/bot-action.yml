@@ -143,10 +143,10 @@ jobs:
             
             console.log("✅ All protected files check passed!");
 
-            - name: Set up Python
-            uses: actions/setup-python@v4
-            with:
-              python-version: ${{ inputs.python_version }}
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+            python-version: ${{ inputs.python_version }}
     
       - name: Install dependencies
         env:

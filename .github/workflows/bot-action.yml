@@ -120,9 +120,11 @@ jobs:
     
       - name: Verify critical files haven't been modified
         uses: actions/github-script@v6
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
         with:
           script: |
-            const prNumber = core.getInput('pr_number');
+            const prNumber = process.env.PR_NUMBER;
             const { data: pr } = await github.rest.pulls.listFiles({
               owner: context.repo.owner,
               repo: context.repo.repo,

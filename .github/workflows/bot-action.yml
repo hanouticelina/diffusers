@@ -71,12 +71,12 @@ jobs:
       - name: Extract PR details
         id: pr_info
         uses: actions/github-script@v6
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
         with:
           script: |
-            const prNumber = core.getInput('pr_number');
-            // console.log('Event name:', context.eventName);
-            // console.log('Event payload:', JSON.stringify(context.payload, null, 2));
-            console.log(`PR number from input: "${prNumber}"`);
+            const prNumber = process.env.PR_NUMBER;
+            console.log(`PR number from env: "${prNumber}"`);
             
             const { data: pr } = await github.rest.pulls.get({
               owner: context.repo.owner,

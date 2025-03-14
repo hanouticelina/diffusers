@@ -60,7 +60,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const prNumber = context.payload.inputs.pr_number 
+            const prNumber = inputs.pr_number; 
 
             const { data: pr } = await github.rest.pulls.get({
               owner: context.repo.owner,

@@ -64,9 +64,6 @@ jobs:
     if: needs.check-permissions.outputs.is_authorized == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Debug inputs
-        run: |
-          echo "PR number from input: ${{ inputs.pr_number }}"
       - name: Extract PR details
         id: pr_info
         uses: actions/github-script@v6

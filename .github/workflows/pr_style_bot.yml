@@ -23,6 +23,7 @@ jobs:
             echo "Event name: ${{ github.event_name }}"
             echo "PR number from event inputs: ${{ github.event.inputs.pr_number }}"
             echo "Raw event: ${{ toJSON(github.event) }}"
+            echo "Calculated PR number: ${{ fromJSON(github.event_name == 'workflow_dispatch' && github.event.inputs.pr_number || github.event.issue.number) }}"
   style:
     uses: ./.github/workflows/bot-action.yml
     with:

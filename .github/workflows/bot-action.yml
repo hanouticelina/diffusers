@@ -3,11 +3,15 @@ name: Style Bot Action
 on:
     workflow_call:
       inputs:
-        style_type:
+        style_command_type:
           required: false
           type: string
-          description: "Type of style check to run (options: 'default', 'quality_only', 'style_only')"
+          description: "Which style command to run (options: 'default' (make style && make quality), 'quality_only', 'style_only')"
           default: "default"
+        pr_number:
+          required: true
+          type: number
+          description: "Pull Request number to process"
         python_quality_dependencies:
           required: true
           type: string

@@ -15,6 +15,14 @@ permissions:
   pull-requests: write
 
 jobs:
+  debug-inputs:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Debug event context
+          run: |
+            echo "Event name: ${{ github.event_name }}"
+            echo "PR number from event inputs: ${{ github.event.inputs.pr_number }}"
+            echo "Raw event: ${{ toJSON(github.event) }}"
   style:
     uses: ./.github/workflows/bot-action.yml
     with:

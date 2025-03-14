@@ -67,7 +67,6 @@ jobs:
       - name: Debug inputs
         run: |
           echo "PR number from input: ${{ inputs.pr_number }}"
-          echo "Input type: ${{ type(inputs.pr_number) }}"
       - name: Extract PR details
         id: pr_info
         uses: actions/github-script@v6

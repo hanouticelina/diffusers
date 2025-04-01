@@ -37,6 +37,10 @@ class SchedulerType(Enum):
     PIECEWISE_CONSTANT = "piecewise_constant"
 
 
+
+
+
+
 def get_constant_schedule(optimizer: Optimizer, last_epoch: int = -1) -> LambdaLR:
     """
     Create a schedule with a constant learning rate, using the learning rate set in optimizer.
@@ -51,6 +55,10 @@ def get_constant_schedule(optimizer: Optimizer, last_epoch: int = -1) -> LambdaL
         `torch.optim.lr_scheduler.LambdaLR` with the appropriate schedule.
     """
     return LambdaLR(optimizer, lambda _: 1, last_epoch=last_epoch)
+
+
+
+
 
 
 def get_constant_schedule_with_warmup(optimizer: Optimizer, num_warmup_steps: int, last_epoch: int = -1) -> LambdaLR:

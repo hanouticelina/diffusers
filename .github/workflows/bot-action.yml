@@ -106,6 +106,7 @@ jobs:
           COMMENT_DATE: ${{ github.event.comment.created_at }}
           PR_NUMBER: ${{ steps.pr_info.outputs.prNumber }}
           BASE_REPO_URL: https://github.com/${{ github.repository }}
+          HEADREF: ${{ steps.pr_info.outputs.headRef }}
         run: |
             echo "--- Checking remotes ---"
             git remote -v

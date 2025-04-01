@@ -111,9 +111,10 @@ jobs:
             echo "--- Checking ref on origin (${{ steps.pr_info.outputs.headRepoFullName }}) ---"
             git ls-remote origin refs/pull/$PR_NUMBER/merge || echo "Ref not found on origin (fork)."
             echo "--- Checking ref on base (${{ github.repository }}) ---"
-            git ls-remote https://github.com/${{ github.repository }} refs/pull/$PR_NUMBER/merge || echo "Ref not found on base repository."
-            echo "--- Proceeding with fetch ---"
-            git fetch origin refs/pull/$PR_NUMBER/merge:refs/remotes/pull/$PR_NUMBER/merge
+            git ls-remote $BASE_REPO_URL refs/pull/$PR_NUMBER/merge || echo "Ref not found on base repository."
+            echo "--- Proceeding with fetch from base repository ---"
+            # Fetch the special PR merge ref directly from the base repository URL
+            git fetch $BASE_REPO_URL refs/pull/$PR_NUMBER/merge:refs/remotes/pull/$PR_NUMBER/merge
             git checkout refs/remotes/pull/$PR_NUMBER/merge
             echo "PR_MERGE_SHA: $(git log -1 --format=%H)"
             echo "PR_MERGE_SHA=$(git log -1 --format=%H)" >> "$GITHUB_OUTPUT"

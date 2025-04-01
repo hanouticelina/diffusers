@@ -105,15 +105,18 @@ jobs:
         env:
           COMMENT_DATE: ${{ github.event.comment.created_at }}
           PR_NUMBER: ${{ steps.pr_info.outputs.prNumber }}
+          BASE_REPO_URL: https://github.com/${{ github.repository }}
         run: |
             echo "--- Checking remotes ---"
             git remote -v
             echo "--- Checking ref on origin (${{ steps.pr_info.outputs.headRepoFullName }}) ---"
             git ls-remote origin refs/pull/$PR_NUMBER/merge || echo "Ref not found on origin (fork)."
             echo "--- Checking ref on base (${{ github.repository }}) ---"
+            # Use the BASE_REPO_URL variable here
             git ls-remote $BASE_REPO_URL refs/pull/$PR_NUMBER/merge || echo "Ref not found on base repository."
             echo "--- Proceeding with fetch from base repository ---"
             # Fetch the special PR merge ref directly from the base repository URL
+            # Use the BASE_REPO_URL variable here
             git fetch $BASE_REPO_URL refs/pull/$PR_NUMBER/merge:refs/remotes/pull/$PR_NUMBER/merge
             git checkout refs/remotes/pull/$PR_NUMBER/merge
             echo "PR_MERGE_SHA: $(git log -1 --format=%H)"
